@@ -1,3 +1,5 @@
+using FlowR.Pipeline;
+
 namespace FlowR;
 
 /// <summary>
