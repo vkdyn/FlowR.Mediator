@@ -34,7 +34,7 @@ FlowR brings the mediator/CQRS pattern to .NET with zero licensing fees, excelle
 ## Installation
 
 ```bash
-dotnet add package FlowR
+dotnet add package FlowR.Mediator
 ```
 
 ---
