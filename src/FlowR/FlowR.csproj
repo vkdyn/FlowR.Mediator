@@ -4,6 +4,11 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <IsPackable>false</IsPackable>
+    <PackageId>FlowR.Mediator</PackageId>
+    <Version>1.0.1</Version>
+    <Description>FlowR is a free, high-performance mediator pattern library for .NET 6/7/8. A drop-in replacement for MediatR — MIT licensed forever. Includes requests, notifications, streaming, pipeline behaviors, parallel publishing, and built-in logging/validation/retry/performance behaviors.</Description>
+    <PackageTags>mediator;mediatR;mediatR-alternative;free;cqrs;request;handler;pipeline;behavior;notification;dotnet;aspnetcore;open-source;mit</PackageTags>
+
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
