@@ -1,10 +1,10 @@
-using FlowR.Pipeline;
+using FlowR.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using System.Collections.Concurrent;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace FlowR.Internal;
+namespace FlowR.Mediator.Internal;
 
 /// <summary>
 /// High-performance handler cache using compiled expression trees.

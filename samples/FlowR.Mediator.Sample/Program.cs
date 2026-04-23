@@ -1,7 +1,7 @@
-using FlowR;
-using FlowR.Behaviors;
-using FlowR.Extensions;
-using FlowR.Pipeline;
+using FlowR.Mediator;
+using FlowR.Mediator.Behaviors;
+using FlowR.Mediator.Extensions;
+using FlowR.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
