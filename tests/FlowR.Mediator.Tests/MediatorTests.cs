@@ -1,10 +1,9 @@
-using FlowR;
-using FlowR.Behaviors;
-using FlowR.Pipeline;
+using FlowR.Mediator.Behaviors;
+using FlowR.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace FlowR.Tests;
+namespace FlowR.Mediator.Tests;
 
 // ---- Test Models ----
 

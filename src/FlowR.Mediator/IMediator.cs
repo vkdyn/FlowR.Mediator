@@ -1,6 +1,6 @@
-using FlowR.Pipeline;
+using FlowR.Mediator.Pipeline;
 
-namespace FlowR;
+namespace FlowR.Mediator;
 
 /// <summary>
 /// Defines the FlowR mediator. Use this to send requests and publish notifications.

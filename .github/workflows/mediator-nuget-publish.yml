@@ -11,8 +11,8 @@ on:
 
 env:
   DOTNET_VERSION: '8.0.x'
-  PROJECT_PATH: 'src/FlowR/FlowR.csproj'
-  TEST_PROJECT_PATH: 'tests/FlowR.Tests/FlowR.Tests.csproj'
+  PROJECT_PATH: 'src/FlowR.Mediator/FlowR.Mediator.csproj'
+  TEST_PROJECT_PATH: 'tests/FlowR.Mediator.Tests/FlowR.Mediator.Tests.csproj'
 
 jobs:
   build-and-test:

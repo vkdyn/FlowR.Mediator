@@ -1,6 +1,6 @@
-using FlowR.Pipeline;
+using FlowR.Mediator.Pipeline;
 
-namespace FlowR.Behaviors;
+namespace FlowR.Mediator.Behaviors;
 
 /// <summary>
 /// Marker interface for validators. Implement with FluentValidation or your own validation logic.

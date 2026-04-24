@@ -1,4 +1,4 @@
-namespace FlowR.Pipeline;
+namespace FlowR.Mediator.Pipeline;
 
 /// <summary>
 /// Represents a step in the request pipeline.

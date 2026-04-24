@@ -1,4 +1,4 @@
-namespace FlowR;
+namespace FlowR.Mediator;
 
 /// <summary>
 /// Represents a void return type. Use this for requests that have no return value.

@@ -1,13 +1,15 @@
-using FlowR.Pipeline;
+using FlowR.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
+using FlowR.Mediator.Internal;
+using FlowR.Mediator;
 
-namespace FlowR.Extensions;
+namespace FlowR.Mediator.Extensions;
 
 /// <summary>
-/// Extension methods to register FlowR with Microsoft.Extensions.DependencyInjection.
+/// Extension methods to register FlowR.Mediator with Microsoft.Extensions.DependencyInjection.
 /// </summary>
-public static class FlowRServiceCollectionExtensions
+public static class ServiceCollectionExtensions
 {
     /// <summary>
     /// Registers FlowR and scans the provided assemblies for handlers and behaviors.
@@ -119,7 +121,7 @@ public static class FlowRServiceCollectionExtensions
 }
 
 /// <summary>
-/// Configuration options for FlowR.
+/// Configuration options for FlowR.Mediator
 /// </summary>
 public sealed class FlowROptions
 {

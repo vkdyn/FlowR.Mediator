@@ -1,8 +1,8 @@
-using FlowR.Pipeline;
+using FlowR.Mediator.Pipeline;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
 
-namespace FlowR.Behaviors;
+namespace FlowR.Mediator.Behaviors;
 
 /// <summary>
 /// Pipeline behavior that logs request execution time and details.

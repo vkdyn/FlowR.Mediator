@@ -7,7 +7,7 @@
 
 VERSION=${1:-"1.0.0"}
 API_KEY=${2:-""}
-PROJECT="src/FlowR/FlowR.csproj"
+PROJECT="src/FlowR.Mediator/FlowR.Mediator.csproj"
 
 echo "==================================================="
 echo "  FlowR NuGet Publisher"
@@ -17,7 +17,7 @@ echo "==================================================="
 # Run tests first
 echo ""
 echo ">> Running tests..."
-dotnet test tests/FlowR.Tests/FlowR.Tests.csproj --configuration Release
+dotnet test tests/FlowR.Mediator.Tests/FlowR.Mediator.Tests.csproj --configuration Release
 if [ $? -ne 0 ]; then
   echo "TESTS FAILED. Aborting publish."
   exit 1
@@ -45,13 +45,13 @@ fi
 if [ -n "$API_KEY" ]; then
   echo ""
   echo ">> Publishing to NuGet.org..."
-  dotnet nuget push ./nupkg/FlowR.$VERSION.nupkg \
+  dotnet nuget push ./nupkg/FlowR.Mediator$VERSION.nupkg \
     --api-key $API_KEY \
     --source https://api.nuget.org/v3/index.json \
     --skip-duplicate
 
   # Push symbols
-  dotnet nuget push ./nupkg/FlowR.$VERSION.snupkg \
+  dotnet nuget push ./nupkg/FlowR.Mediator$VERSION.snupkg \
     --api-key $API_KEY \
     --source https://api.nuget.org/v3/index.json \
     --skip-duplicate
@@ -61,6 +61,6 @@ if [ -n "$API_KEY" ]; then
   echo ">> View at: https://www.nuget.org/packages/FlowR/$VERSION"
 else
   echo ""
-  echo ">> Package created at ./nupkg/FlowR.$VERSION.nupkg"
-  echo ">> To publish, run: dotnet nuget push ./nupkg/FlowR.$VERSION.nupkg --api-key YOUR_KEY --source https://api.nuget.org/v3/index.json"
+  echo ">> Package created at ./nupkg/FlowR.Mediator$VERSION.nupkg"
+  echo ">> To publish, run: dotnet nuget push ./nupkg/FlowR.Mediator$VERSION.nupkg --api-key YOUR_KEY --source https://api.nuget.org/v3/index.json"
 fi

@@ -9,10 +9,10 @@
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 
     <PackageId>FlowR.Mediator</PackageId>
-    <Version>1.0.1</Version>
+    <Version>2.0.0</Version>
     <Authors>Krishneel Kumar</Authors>
-    <Company>FlowR</Company>
-    <Description>FlowR is a free, high-performance mediator pattern library for .NET 6/7/8. A drop-in replacement for MediatR — MIT licensed forever. Includes requests, notifications, streaming, pipeline behaviors, parallel publishing, and built-in logging/validation/retry/performance behaviors.</Description>
+    <Company>FlowR.Mediator</Company>
+    <Description>FlowR.Mediator is a free, high-performance mediator pattern library for .NET 6/7/8. A drop-in replacement for MediatR — MIT licensed forever. Includes requests, notifications, streaming, pipeline behaviors, parallel publishing, and built-in logging/validation/retry/performance behaviors.</Description>
     <PackageTags>mediator;mediatR;mediatR-alternative;free;cqrs;request;handler;pipeline;behavior;notification;dotnet;aspnetcore;open-source;mit</PackageTags>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/your-repo-url</RepositoryUrl>

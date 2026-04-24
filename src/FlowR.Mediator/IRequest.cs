@@ -1,4 +1,4 @@
-namespace FlowR;
+namespace FlowR.Mediator;
 
 /// <summary>
 /// Marker interface for requests that return a response.

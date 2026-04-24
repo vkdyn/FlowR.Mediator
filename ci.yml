@@ -37,7 +37,7 @@ jobs:
         run: dotnet build --configuration Release --no-restore
 
       - name: Test
-        run: dotnet test tests/FlowR.Tests/FlowR.Tests.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+        run: dotnet test tests/FlowR.Mediator.Tests/FlowR.Mediator.Tests.csproj --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
 
       - name: Upload coverage
         uses: codecov/codecov-action@v3
@@ -63,16 +63,16 @@ jobs:
         run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
 
       - name: Pack
-        run: dotnet pack src/FlowR/FlowR.csproj --configuration Release -p:Version=${{ steps.version.outputs.VERSION }} --output ./nupkg
+        run: dotnet pack src/FlowR.Mediator/FlowR.Mediator.csproj --configuration Release -p:Version=${{ steps.version.outputs.VERSION }} --output ./nupkg
 
       - name: Push to NuGet
         run: |
-          dotnet nuget push ./nupkg/FlowR.${{ steps.version.outputs.VERSION }}.nupkg \
+          dotnet nuget push ./nupkg/FlowR.Mediator${{ steps.version.outputs.VERSION }}.nupkg \
             --api-key ${{ secrets.NUGET_API_KEY }} \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate
 
-          dotnet nuget push ./nupkg/FlowR.${{ steps.version.outputs.VERSION }}.snupkg \
+          dotnet nuget push ./nupkg/FlowR.Mediator${{ steps.version.outputs.VERSION }}.snupkg \
             --api-key ${{ secrets.NUGET_API_KEY }} \
             --source https://api.nuget.org/v3/index.json \
             --skip-duplicate

@@ -1,9 +1,9 @@
-using FlowR.Pipeline;
-using FlowR.Internal;
-using Microsoft.Extensions.DependencyInjection;
-using System.Runtime.CompilerServices;
 
-namespace FlowR;
+using FlowR.Mediator.Internal;
+using FlowR.Mediator.Pipeline;
+using Microsoft.Extensions.DependencyInjection;
+
+namespace FlowR.Mediator;
 
 /// <summary>
 /// The FlowR mediator implementation.
