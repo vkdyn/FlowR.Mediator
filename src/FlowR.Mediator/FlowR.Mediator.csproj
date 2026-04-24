@@ -1,11 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2" />
-  </ItemGroup>
+
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;</TargetFrameworks>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
+
+		<IsPackable>true</IsPackable>
+		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+
+		<PackageId>FlowR.Mediator</PackageId>
+		<Version>2.0.1</Version>
+		<Authors>Krishneel Kumar</Authors>
+		<Company>FlowR.Mediator</Company>
+		<Description>FlowR.Mediator is a free, high-performance mediator pattern library for .NET 6/7/8. A drop-in replacement for MediatR — MIT licensed forever. Includes requests, notifications, streaming, pipeline behaviors, parallel publishing, and built-in logging/validation/retry/performance behaviors.</Description>
+		<PackageTags>mediator;mediatR;mediatR-alternative;free;cqrs;request;handler;pipeline;behavior;notification;dotnet;aspnetcore;open-source;mit</PackageTags>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/your-repo-url</RepositoryUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
 </Project>
