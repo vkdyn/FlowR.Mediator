@@ -1,4 +1,4 @@
-# FlowR.Mediator 🌊
+# FlowR 🌊
 
 [![NuGet](https://img.shields.io/nuget/v/FlowR.svg)](https://www.nuget.org/packages/FlowR)
 [![NuGet Downloads](https://img.shields.io/nuget/dt/FlowR.svg)](https://www.nuget.org/packages/FlowR)

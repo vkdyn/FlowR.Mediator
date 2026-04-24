@@ -1,174 +1,124 @@
 using FlowR.Mediator;
-using FlowR.Mediator.Behaviors;
+using FlowR.Mediator.Diagnostics;
 using FlowR.Mediator.Extensions;
 using FlowR.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using System.Runtime.CompilerServices;
 
-// ============================================================
-// FlowR Sample Application
-// Demonstrates: Requests, Void Commands, Notifications,
-//               Streaming, Pipeline Behaviors, Validation
-// ============================================================
+ServiceCollection services = new();
+services.AddSingleton<ExecutionLog>();
+services.AddFlowR(typeof(Program).Assembly);
 
-var services = new ServiceCollection();
+using ServiceProvider provider = services.BuildServiceProvider();
+IMediator mediator = provider.GetRequiredService<IMediator>();
 
-services.AddLogging(b => b.AddConsole().SetMinimumLevel(LogLevel.Debug));
+CreateOrderResult result = await mediator.Send(new CreateOrderCommand("ORD-1001", 125.50m));
+Console.WriteLine($"Created order: {result.OrderId}, total: {result.Total:C}");
 
-services.AddFlowR(options =>
+string status = await mediator.SendAsync(new GetOrderStatusQuery("ORD-1001"));
+Console.WriteLine($"Status: {status}");
+
+await mediator.Publish(new OrderCreatedNotification("ORD-1001"));
+
+await foreach (int number in mediator.CreateStream(new CountToStreamRequest(5)))
 {
-    options.MediatorLifetime = ServiceLifetime.Scoped;
-    options.HandlerLifetime = ServiceLifetime.Transient;
-},
-typeof(Program).Assembly);
-
-// Add open generic behaviors (apply to ALL requests)
-services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-
-// Add validator
-services.AddTransient<IFlowRValidator<GetProductQuery>, GetProductQueryValidator>();
-
-var provider = services.BuildServiceProvider();
-var mediator = provider.GetRequiredService<IMediator>();
-
-Console.WriteLine("=== FlowR Sample Application ===\n");
-
-// 1. Request/Response
-Console.WriteLine("--- Query ---");
-var product = await mediator.SendAsync(new GetProductQuery(1));
-Console.WriteLine($"Got product: {product.Name} @ ${product.Price}\n");
-
-// 2. Void Command
-Console.WriteLine("--- Command ---");
-await mediator.SendAsync(new CreateProductCommand("Widget", 9.99m));
-Console.WriteLine();
-
-// 3. Notification (multiple handlers)
-Console.WriteLine("--- Notification ---");
-await mediator.PublishAsync(new ProductCreatedEvent(42, "Widget"));
-Console.WriteLine();
-
-// 4. Parallel notification
-Console.WriteLine("--- Parallel Notification ---");
-await mediator.PublishAsync(new ProductCreatedEvent(43, "Gadget"), NotificationPublishStrategy.Parallel);
-Console.WriteLine();
-
-// 5. Streaming
-Console.WriteLine("--- Stream ---");
-await foreach (var item in mediator.CreateStream(new GetTopProductsStream(3)))
-{
-    Console.WriteLine($"  Streamed: {item.Name}");
-}
-Console.WriteLine();
-
-// 6. Validation failure
-Console.WriteLine("--- Validation Failure ---");
-try
-{
-    await mediator.SendAsync(new GetProductQuery(-1));
-}
-catch (FlowRValidationException ex)
-{
-    Console.WriteLine($"Validation failed: {ex.Errors[0].ErrorMessage}");
+    Console.WriteLine($"Stream value: {number}");
 }
 
-Console.WriteLine("\n=== Done! ===");
-
-// ============================================================
-// Models
-// ============================================================
-
-public record GetProductQuery(int ProductId) : IRequest<ProductDto>;
-public record ProductDto(int Id, string Name, decimal Price);
-
-public record CreateProductCommand(string Name, decimal Price) : IRequest;
-
-public record ProductCreatedEvent(int ProductId, string Name) : INotification;
-
-public record GetTopProductsStream(int Count) : IStreamRequest<ProductDto>;
-
-// ============================================================
-// Handlers
-// ============================================================
-
-public class GetProductQueryHandler : IRequestHandler<GetProductQuery, ProductDto>
+ExecutionLog log = provider.GetRequiredService<ExecutionLog>();
+Console.WriteLine("Pipeline log:");
+foreach (string item in log.Messages)
 {
-    public Task<ProductDto> HandleAsync(GetProductQuery request, CancellationToken cancellationToken = default)
-        => Task.FromResult(new ProductDto(request.ProductId, "Awesome Widget", 29.99m));
+    Console.WriteLine($"- {item}");
 }
 
-public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand>
+public sealed record CreateOrderCommand(string OrderId, decimal Total) : IRequest<CreateOrderResult>;
+public sealed record CreateOrderResult(string OrderId, decimal Total);
+
+public sealed class CreateOrderCommandHandler : IRequestHandler<CreateOrderCommand, CreateOrderResult>
 {
-    private readonly ILogger<CreateProductCommandHandler> _logger;
-
-    public CreateProductCommandHandler(ILogger<CreateProductCommandHandler> logger)
-        => _logger = logger;
-
-    public Task<Unit> HandleAsync(CreateProductCommand request, CancellationToken cancellationToken = default)
+    public Task<CreateOrderResult> HandleAsync(CreateOrderCommand request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Creating product: {Name} @ {Price}", request.Name, request.Price);
-        return Unit.Task;
+        return Task.FromResult(new CreateOrderResult(request.OrderId, request.Total));
     }
 }
 
-public class ProductCreatedEmailHandler : INotificationHandler<ProductCreatedEvent>
-{
-    private readonly ILogger<ProductCreatedEmailHandler> _logger;
-    public ProductCreatedEmailHandler(ILogger<ProductCreatedEmailHandler> logger) => _logger = logger;
+public sealed record GetOrderStatusQuery(string OrderId) : IRequest<string>;
 
-    public Task HandleAsync(ProductCreatedEvent notification, CancellationToken cancellationToken = default)
+public sealed class GetOrderStatusQueryHandler : IRequestHandler<GetOrderStatusQuery, string>
+{
+    public Task<string> HandleAsync(GetOrderStatusQuery request, CancellationToken cancellationToken)
     {
-        _logger.LogInformation("EMAIL: Product {Name} (ID:{Id}) created", notification.Name, notification.ProductId);
+        return Task.FromResult($"Order {request.OrderId} is Ready");
+    }
+}
+
+public sealed record OrderCreatedNotification(string OrderId) : INotification;
+
+public sealed class SendOrderEmailHandler : INotificationHandler<OrderCreatedNotification>
+{
+    private readonly ExecutionLog _log;
+
+    public SendOrderEmailHandler(ExecutionLog log)
+    {
+        _log = log;
+    }
+
+    public Task HandleAsync(OrderCreatedNotification notification, CancellationToken cancellationToken)
+    {
+        _log.Add($"Email sent for {notification.OrderId}");
         return Task.CompletedTask;
     }
 }
 
-public class ProductCreatedAuditHandler : INotificationHandler<ProductCreatedEvent>
+public sealed class AuditOrderCreatedHandler : INotificationHandler<OrderCreatedNotification>
 {
-    private readonly ILogger<ProductCreatedAuditHandler> _logger;
-    public ProductCreatedAuditHandler(ILogger<ProductCreatedAuditHandler> logger) => _logger = logger;
+    private readonly ExecutionLog _log;
 
-    public Task HandleAsync(ProductCreatedEvent notification, CancellationToken cancellationToken = default)
+    public AuditOrderCreatedHandler(ExecutionLog log)
     {
-        _logger.LogInformation("AUDIT: Logged product creation event for {Name}", notification.Name);
+        _log = log;
+    }
+
+    public Task HandleAsync(OrderCreatedNotification notification, CancellationToken cancellationToken)
+    {
+        _log.Add($"Audit saved for {notification.OrderId}");
         return Task.CompletedTask;
     }
 }
 
-public class GetTopProductsStreamHandler : IStreamRequestHandler<GetTopProductsStream, ProductDto>
-{
-    private static readonly ProductDto[] Products =
-    [
-        new(1, "Widget Pro", 49.99m),
-        new(2, "Gadget Max", 99.99m),
-        new(3, "Super Thing", 19.99m),
-        new(4, "Doohickey", 5.99m),
-        new(5, "Thingamajig", 14.99m),
-    ];
+public sealed record CountToStreamRequest(int Count) : IStreamRequest<int>;
 
-    public async IAsyncEnumerable<ProductDto> HandleAsync(GetTopProductsStream request, CancellationToken cancellationToken = default)
+public sealed class CountToStreamRequestHandler : IStreamRequestHandler<CountToStreamRequest, int>
+{
+    public async IAsyncEnumerable<int> HandleAsync(
+        CountToStreamRequest request,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        foreach (var p in Products.Take(request.Count))
+        for (int i = 1; i <= request.Count; i++)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             await Task.Delay(10, cancellationToken);
-            yield return p;
+            yield return i;
         }
     }
 }
 
-// ============================================================
-// Validators
-// ============================================================
-
-public class GetProductQueryValidator : IFlowRValidator<GetProductQuery>
+public sealed class LoggingBehaviour<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : IBaseRequest
 {
-    public Task<IEnumerable<ValidationError>> ValidateAsync(GetProductQuery request, CancellationToken cancellationToken = default)
-    {
-        var errors = new List<ValidationError>();
-        if (request.ProductId <= 0)
-            errors.Add(new ValidationError("ProductId", "ProductId must be greater than 0."));
+    private readonly ExecutionLog _log;
 
-        return Task.FromResult<IEnumerable<ValidationError>>(errors);
+    public LoggingBehaviour(ExecutionLog log)
+    {
+        _log = log;
+    }
+
+    public async Task<TResponse> HandleAsync(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    {
+        _log.Add($"Before {typeof(TRequest).Name}");
+        TResponse response = await next().ConfigureAwait(false);
+        _log.Add($"After {typeof(TRequest).Name}");
+        return response;
     }
 }
