@@ -9,7 +9,7 @@
 		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 
 		<PackageId>FlowR.Mediator</PackageId>
-		<Version>2.0.1</Version>
+		<Version>2.0.2</Version>
 		<Authors>Krishneel Kumar</Authors>
 		<Company>FlowR.Mediator</Company>
 		<Description>FlowR.Mediator is a free, high-performance mediator pattern library for .NET 6/7/8. A drop-in replacement for MediatR — MIT licensed forever. Includes requests, notifications, streaming, pipeline behaviors, parallel publishing, and built-in logging/validation/retry/performance behaviors.</Description>
