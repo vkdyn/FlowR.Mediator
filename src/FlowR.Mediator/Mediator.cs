@@ -1,4 +1,3 @@
-
 using FlowR.Mediator.Internal;
 using FlowR.Mediator.Pipeline;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,7 +6,7 @@ namespace FlowR.Mediator;
 
 /// <summary>
 /// The FlowR mediator implementation.
-/// Resolves handlers and behaviors from the DI container and orchestrates the pipeline.
+/// Resolves handlers and behaviours from the DI container and orchestrates the pipeline.
 /// </summary>
 public sealed class Mediator : IMediator
 {
@@ -18,51 +17,91 @@ public sealed class Mediator : IMediator
         _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
 
-    /// <inheritdoc />
-    public async Task<TResponse> SendAsync<TResponse>(IRequest<TResponse> request, CancellationToken cancellationToken = default)
+    public Task<TResponse> Send<TResponse>(
+        IRequest<TResponse> request,
+        CancellationToken cancellationToken = default)
+    {
+        return SendAsync(request, cancellationToken);
+    }
+
+    public Task Send(
+        IRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        return SendAsync(request, cancellationToken);
+    }
+
+    public Task Publish<TNotification>(
+        TNotification notification,
+        CancellationToken cancellationToken = default)
+        where TNotification : INotification
+    {
+        return PublishAsync(notification, cancellationToken);
+    }
+
+    public async Task<TResponse> SendAsync<TResponse>(
+        IRequest<TResponse> request,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var requestType = request.GetType();
-        var handler = HandlerCache.GetOrCreateRequestHandler<TResponse>(_serviceProvider, requestType);
+        Type requestType = request.GetType();
+
+        Func<IBaseRequest, IServiceProvider, CancellationToken, Task<TResponse>> handler =
+            HandlerCache.GetOrCreateRequestHandler<TResponse>(_serviceProvider, requestType);
+
         return await handler(request, _serviceProvider, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    public async Task SendAsync(IRequest request, CancellationToken cancellationToken = default)
+    public async Task SendAsync(
+        IRequest request,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+
         await SendAsync<Unit>(request, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <inheritdoc />
-    public IAsyncEnumerable<TResponse> CreateStream<TResponse>(IStreamRequest<TResponse> request, CancellationToken cancellationToken = default)
+    public IAsyncEnumerable<TResponse> CreateStream<TResponse>(
+        IStreamRequest<TResponse> request,
+        CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(request);
 
-        var requestType = request.GetType();
-        var handler = HandlerCache.GetOrCreateStreamHandler<TResponse>(_serviceProvider, requestType);
+        Type requestType = request.GetType();
+
+        Func<IBaseRequest, IServiceProvider, CancellationToken, IAsyncEnumerable<TResponse>> handler =
+            HandlerCache.GetOrCreateStreamHandler<TResponse>(_serviceProvider, requestType);
+
         return handler(request, _serviceProvider, cancellationToken);
     }
 
-    /// <inheritdoc />
-    public Task PublishAsync<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
+    public Task PublishAsync<TNotification>(
+        TNotification notification,
+        CancellationToken cancellationToken = default)
         where TNotification : INotification
-        => PublishAsync(notification, NotificationPublishStrategy.Sequential, cancellationToken);
+    {
+        return PublishAsync(notification, NotificationPublishStrategy.Sequential, cancellationToken);
+    }
 
-    /// <inheritdoc />
-    public async Task PublishAsync<TNotification>(TNotification notification, NotificationPublishStrategy strategy, CancellationToken cancellationToken = default)
+    public async Task PublishAsync<TNotification>(
+        TNotification notification,
+        NotificationPublishStrategy strategy,
+        CancellationToken cancellationToken = default)
         where TNotification : INotification
     {
         ArgumentNullException.ThrowIfNull(notification);
 
-        var handlers = _serviceProvider
+        List<INotificationHandler<TNotification>> handlers = _serviceProvider
             .GetServices<INotificationHandler<TNotification>>()
             .ToList();
 
-        if (handlers.Count == 0) return;
+        if (handlers.Count == 0)
+        {
+            return;
+        }
 
-        var behaviors = _serviceProvider
+        List<INotificationPipelineBehavior<TNotification>> behaviours = _serviceProvider
             .GetServices<INotificationPipelineBehavior<TNotification>>()
             .Reverse()
             .ToList();
@@ -70,19 +109,25 @@ public sealed class Mediator : IMediator
         switch (strategy)
         {
             case NotificationPublishStrategy.Sequential:
-                await PublishSequentialAsync(notification, handlers, behaviors, cancellationToken).ConfigureAwait(false);
+                await PublishSequentialAsync(notification, handlers, behaviours, cancellationToken).ConfigureAwait(false);
                 break;
 
             case NotificationPublishStrategy.Parallel:
-                await PublishParallelAsync(notification, handlers, behaviors, cancellationToken).ConfigureAwait(false);
+                await PublishParallelAsync(notification, handlers, behaviours, cancellationToken).ConfigureAwait(false);
                 break;
 
             case NotificationPublishStrategy.ParallelNoThrow:
-                await PublishParallelNoThrowAsync(notification, handlers, behaviors, cancellationToken).ConfigureAwait(false);
+                await PublishParallelNoThrowAsync(notification, handlers, behaviours, cancellationToken).ConfigureAwait(false);
                 break;
 
             case NotificationPublishStrategy.FireAndForget:
-                _ = Task.Run(() => PublishSequentialAsync(notification, handlers, behaviors, CancellationToken.None), CancellationToken.None);
+                _ = Task.Run(
+                    () => PublishSequentialAsync(
+                        notification,
+                        handlers,
+                        behaviours,
+                        CancellationToken.None),
+                    CancellationToken.None);
                 break;
 
             default:
@@ -93,51 +138,79 @@ public sealed class Mediator : IMediator
     private static async Task PublishSequentialAsync<TNotification>(
         TNotification notification,
         List<INotificationHandler<TNotification>> handlers,
-        List<INotificationPipelineBehavior<TNotification>> behaviors,
+        List<INotificationPipelineBehavior<TNotification>> behaviours,
         CancellationToken cancellationToken)
         where TNotification : INotification
     {
-        foreach (var handler in handlers)
+        foreach (INotificationHandler<TNotification> handler in handlers)
         {
-            await BuildNotificationPipeline(notification, handler, behaviors, cancellationToken)().ConfigureAwait(false);
+            await BuildNotificationPipeline(notification, handler, behaviours, cancellationToken)()
+                .ConfigureAwait(false);
         }
     }
 
     private static async Task PublishParallelAsync<TNotification>(
         TNotification notification,
         List<INotificationHandler<TNotification>> handlers,
-        List<INotificationPipelineBehavior<TNotification>> behaviors,
+        List<INotificationPipelineBehavior<TNotification>> behaviours,
         CancellationToken cancellationToken)
         where TNotification : INotification
     {
-        var tasks = handlers.Select(h => BuildNotificationPipeline(notification, h, behaviors, cancellationToken)());
+        IEnumerable<Task> tasks = handlers.Select(handler =>
+            BuildNotificationPipeline(notification, handler, behaviours, cancellationToken)());
+
         await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     private static async Task PublishParallelNoThrowAsync<TNotification>(
         TNotification notification,
         List<INotificationHandler<TNotification>> handlers,
-        List<INotificationPipelineBehavior<TNotification>> behaviors,
+        List<INotificationPipelineBehavior<TNotification>> behaviours,
         CancellationToken cancellationToken)
         where TNotification : INotification
     {
-        var tasks = handlers.Select(h => BuildNotificationPipeline(notification, h, behaviors, cancellationToken)());
-        var results = await Task.WhenAll(tasks.Select(t => t.ContinueWith(x => x.Exception, TaskContinuationOptions.None))).ConfigureAwait(false);
-        var exceptions = results.Where(e => e != null).SelectMany(e => e!.InnerExceptions).ToList();
+        IEnumerable<Task> tasks = handlers.Select(handler =>
+            BuildNotificationPipeline(notification, handler, behaviours, cancellationToken)());
+
+        Task<Exception?>[] wrappedTasks = tasks
+            .Select(async task =>
+            {
+                try
+                {
+                    await task.ConfigureAwait(false);
+                    return null;
+                }
+                catch (Exception exception)
+                {
+                    return exception;
+                }
+            })
+            .ToArray();
+
+        Exception?[] results = await Task.WhenAll(wrappedTasks).ConfigureAwait(false);
+
+        List<Exception> exceptions = results
+            .Where(exception => exception != null)
+            .Select(exception => exception!)
+            .ToList();
+
         if (exceptions.Count > 0)
+        {
             throw new AggregateException("One or more notification handlers failed.", exceptions);
+        }
     }
 
     private static NotificationHandlerDelegate BuildNotificationPipeline<TNotification>(
         TNotification notification,
         INotificationHandler<TNotification> handler,
-        List<INotificationPipelineBehavior<TNotification>> behaviors,
+        List<INotificationPipelineBehavior<TNotification>> behaviours,
         CancellationToken cancellationToken)
         where TNotification : INotification
     {
         NotificationHandlerDelegate core = () => handler.HandleAsync(notification, cancellationToken);
 
-        return behaviors.Aggregate(core, (next, behavior) =>
-            () => behavior.HandleAsync(notification, next, cancellationToken));
+        return behaviours.Aggregate(
+            core,
+            (next, behaviour) => () => behaviour.HandleAsync(notification, next, cancellationToken));
     }
 }
