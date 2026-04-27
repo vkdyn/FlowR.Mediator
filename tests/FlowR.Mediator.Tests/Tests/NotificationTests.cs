@@ -71,12 +71,18 @@ public sealed class NotificationTests
     [TestMethod]
     public async Task Publish_Should_Run_All_Handlers()
     {
-        var sp = TestServiceFactory.CreateDefault();
-        var mediator = sp.GetRequiredService<IMediator>();
-        var log = sp.GetRequiredService<TestLog>();
+        ServiceProvider sp = TestServiceFactory.CreateDefault();
+        IMediator mediator = sp.GetRequiredService<IMediator>();
+        TestLog log = sp.GetRequiredService<TestLog>();
 
         await mediator.Publish(new OrderCreatedNotification("1"));
 
-        Assert.AreEqual(2, log.Messages.Count);
+        // Filter to only the handler messages — notification pipeline behaviors
+        // (registered by other tests via assembly scanning) add extra entries
+        List<string> handlerMessages = log.Messages
+            .Where(m => m == "email:1" || m == "audit-notification:1")
+            .ToList();
+
+        Assert.AreEqual(2, handlerMessages.Count);
     }
 }

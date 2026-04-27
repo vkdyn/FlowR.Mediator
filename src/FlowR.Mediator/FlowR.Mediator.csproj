@@ -1,30 +1,38 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFrameworks>net8.0;</TargetFrameworks>
-		<Nullable>enable</Nullable>
-		<ImplicitUsings>enable</ImplicitUsings>
+  <PropertyGroup>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
 
-		<IsPackable>true</IsPackable>
-		<GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+    <IsPackable>true</IsPackable>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
 
-		<PackageId>FlowR.Mediator</PackageId>
-		<Version>2.0.2</Version>
-		<Authors>Krishneel Kumar</Authors>
-		<Company>FlowR.Mediator</Company>
-		<Description>FlowR.Mediator is a free, high-performance mediator pattern library for .NET 6/7/8. A drop-in replacement for MediatR — MIT licensed forever. Includes requests, notifications, streaming, pipeline behaviors, parallel publishing, and built-in logging/validation/retry/performance behaviors.</Description>
-		<PackageTags>mediator;mediatR;mediatR-alternative;free;cqrs;request;handler;pipeline;behavior;notification;dotnet;aspnetcore;open-source;mit</PackageTags>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-		<RepositoryUrl>https://github.com/your-repo-url</RepositoryUrl>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-	</PropertyGroup>
+    <PackageId>FlowR.Mediator</PackageId>
+    <Version>2.1.0</Version>
+    <Authors>Krishnoel Kumar</Authors>
+    <Company>FlowR.Mediator</Company>
+    <Description>
+      FlowR.Mediator — a free, zero-dependency drop-in replacement for MediatR.
+      MIT licensed. Supports: IRequest, INotification, IStreamRequest,
+      IPipelineBehavior, IRequestPreProcessor, IRequestPostProcessor,
+      parallel/sequential/fire-and-forget publishing, INotificationPipelineBehavior,
+      MediatR namespace compatibility shim, ServiceFactory, Unit, ISender, IPublisher.
+    </Description>
+    <PackageTags>mediator;mediatR;mediatR-replacement;cqrs;pipeline;notification;streaming;dotnet;aspnetcore;free;mit</PackageTags>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryUrl>https://github.com/krishnoel/flowr-mediator</RepositoryUrl>
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
-		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+  </ItemGroup>
 
-	<ItemGroup>
-		<None Include="README.md" Pack="true" PackagePath="\" />
-	</ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
 </Project>

@@ -28,11 +28,8 @@ public sealed class PipelineBehaviourTests
         CollectionAssert.Contains(messages, "handler:PingCommand");
         CollectionAssert.Contains(messages, "after:PingCommand");
 
-        Assert.IsTrue(
-            messages.IndexOf("before:PingCommand") < messages.IndexOf("handler:PingCommand"));
-
-        Assert.IsTrue(
-            messages.IndexOf("handler:PingCommand") < messages.IndexOf("after:PingCommand"));
+        Assert.IsTrue(messages.IndexOf("before:PingCommand") < messages.IndexOf("handler:PingCommand"));
+        Assert.IsTrue(messages.IndexOf("handler:PingCommand") < messages.IndexOf("after:PingCommand"));
     }
 
     [TestMethod]
@@ -44,21 +41,10 @@ public sealed class PipelineBehaviourTests
 
         await mediator.Send(new PingCommand("x")).ConfigureAwait(false);
 
-        List<string> messages = log.Messages
-            .Where(message =>
-                message == "before:PingCommand" ||
-                message == "handler:PingCommand" ||
-                message == "after:PingCommand")
-            .ToList();
-
+        // Exactly before → handler → after, nothing else
         CollectionAssert.AreEqual(
-            new[]
-            {
-                "before:PingCommand",
-                "handler:PingCommand",
-                "after:PingCommand"
-            },
-            messages);
+            new[] { "before:PingCommand", "handler:PingCommand", "after:PingCommand" },
+            log.Messages.ToList());
     }
 
     [TestMethod]
